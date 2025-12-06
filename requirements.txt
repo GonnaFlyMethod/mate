@@ -1,0 +1,17 @@
+# Core FastAPI
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+python-multipart>=0.0.12
+python-dotenv>=1.0.1
+aiofiles>=24.1.0
+
+# OpenAI (for Whisper + Moderation API)
+openai>=1.0.0
+
+# For video/audio processing
+# ffmpeg-python>=0.2.0  # Optional - we use subprocess directly
+
+# Development
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+httpx>=0.25.0

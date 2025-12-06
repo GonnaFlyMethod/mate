@@ -1,110 +1,155 @@
-# Mate
+# Video Safety Analyzer
 
-Video upload and audio extraction API.
+Analyze videos for content safety with transcription, toxicity scoring, and visual content moderation using OpenAI APIs.
 
 ## Features
 
-- 📹 Upload video files (MP4, MOV, AVI, MKV, WebM)
-- 🎵 Automatic audio extraction using FFmpeg
-- ⚡ Background processing
-- 📁 Download extracted audio (WAV or MP3)
+- 🎙️ **Transcription** - Speech-to-text using OpenAI Whisper API
+- ☢️ **Toxicity Detection** - Detect harmful language using OpenAI Moderation API
+- 👁️ **Visual Moderation** - Detect inappropriate content using GPT-4 Vision
+- 📊 **Safety Reports** - Comprehensive reports with severity ratings and recommendations
 
 ## Requirements
 
 - Python 3.11+
 - FFmpeg installed on system
-- Poetry for dependency management
+- OpenAI API key
 
 ## Installation
 
 ```bash
 # Clone the repo
-git clone https://github.com/GonnaFlyMethod/mate.git
+git clone https://github.com/yourusername/mate.git
 cd mate
 
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
 # Install dependencies
-poetry install
+pip install -r requirements.txt
 
-# Copy environment file
+# Set up environment variables
 cp .env.example .env
+# Edit .env and add your OPENAI_API_KEY
 ```
 
-## Running
+### Install FFmpeg
 
 ```bash
-# Start the server
-poetry run uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+# macOS
+brew install ffmpeg
+
+# Ubuntu/Debian
+sudo apt install ffmpeg
+
+# Windows (via chocolatey)
+choco install ffmpeg
 ```
 
-Or from the src directory:
+## Quick Start
+
 ```bash
-cd src
-poetry run uvicorn api.main:app --reload
+# Start the API server
+uvicorn src.api.main:app --reload --port 8000
 ```
+
+API docs available at: http://localhost:8000/docs
 
 ## API Endpoints
 
-### Health Check
-```
-GET /health
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | API information |
+| GET | `/health` | Health check |
+| POST | `/upload` | Upload a video |
+| POST | `/analyze/{job_id}` | Run safety analysis |
+| POST | `/quick-check/{job_id}` | Quick visual screening |
+| GET | `/status/{job_id}` | Get job status |
+| GET | `/report/{job_id}` | Get safety report |
+| GET | `/transcript/{job_id}` | Get transcription |
+| GET | `/audio/{job_id}` | Download audio |
+| DELETE | `/job/{job_id}` | Delete job |
+
+## Usage Example
+
+```bash
+# 1. Upload a video
+curl -X POST "http://localhost:8000/upload" \
+  -F "file=@video.mp4"
+
+# Response: {"job_id": "abc-123", "status": "uploaded", ...}
+
+# 2. Run safety analysis
+curl -X POST "http://localhost:8000/analyze/abc-123"
+
+# 3. Get the report
+curl "http://localhost:8000/report/abc-123"
 ```
 
-### Upload Video
-```
-POST /upload
-Content-Type: multipart/form-data
+## Safety Report Structure
 
-file: <video file>
-extract_audio_flag: true (optional, default: true)
-```
-
-Response:
 ```json
 {
-  "job_id": "uuid",
-  "status": "processing",
-  "duration_seconds": 120.5,
-  "message": "Video uploaded successfully"
+  "transcription": {
+    "full_text": "...",
+    "segments": [...],
+    "language": "english"
+  },
+  "moderation": {
+    "summary": {
+      "max_score": 0.12,
+      "flagged_count": 0,
+      "overall_severity": "safe"
+    },
+    "flagged_segments": []
+  },
+  "visual_moderation": {
+    "summary": {
+      "total_frames_analyzed": 10,
+      "flagged_frames": 0,
+      "min_safety_score": 0.95
+    },
+    "flagged_frames": []
+  },
+  "overall_assessment": {
+    "safety_score": 0.88,
+    "verdict": "SAFE",
+    "flags": [],
+    "recommendations": []
+  }
 }
 ```
 
-### Check Status
-```
-GET /status/{job_id}
-```
+## Verdicts
 
-Response:
-```json
-{
-  "status": "completed",
-  "video_path": "...",
-  "audio_path": "...",
-  "duration_seconds": 120.5,
-  "error": null
-}
-```
-
-### Download Audio
-```
-GET /audio/{job_id}
-```
-
-Returns the audio file (WAV for videos ≤10min, MP3 for longer videos).
-
-### Delete Job
-```
-DELETE /job/{job_id}
-```
+| Verdict | Safety Score | Description |
+|---------|--------------|-------------|
+| SAFE | ≥80% | Safe for general audiences |
+| CAUTION | 60-80% | May not suit all audiences |
+| RESTRICTED | 40-60% | Should be age-restricted |
+| UNSAFE | 20-40% | Violates safety guidelines |
+| BLOCKED | <20% | Severely violates guidelines |
 
 ## Configuration
 
-Environment variables (`.env`):
+Environment variables in `.env`:
 
 ```
-MAX_VIDEO_DURATION_MINUTES=60
+OPENAI_API_KEY=sk-...          # Required
+MAX_VIDEO_DURATION_MINUTES=60  # Optional (default: 60)
+```
+
+## Running Tests
+
+```bash
+# Activate virtual environment
+source venv/bin/activate
+
+# Run tests
+pytest tests/ -v
 ```
 
 ## License
 
 MIT
-

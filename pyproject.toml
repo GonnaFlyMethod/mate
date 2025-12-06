@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "mate"
-version = "0.1.0"
-description = "Video processing API - upload videos and extract audio"
+version = "1.0.0"
+description = "Video Safety Analyzer - transcription, toxicity scoring, and visual content moderation"
 authors = ["Your Name <your@email.com>"]
 readme = "README.md"
 
@@ -12,11 +12,17 @@ uvicorn = {extras = ["standard"], version = "^0.32.0"}
 python-multipart = "^0.0.12"
 python-dotenv = "^1.0.1"
 aiofiles = "^24.1.0"
+openai = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
+pytest-asyncio = "^0.23.0"
+httpx = "^0.25.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
